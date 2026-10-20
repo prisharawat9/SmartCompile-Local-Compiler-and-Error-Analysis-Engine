@@ -1,0 +1,34 @@
+# Environments & Dependencies
+venv/
+.venv/
+env/
+frontend/node_modules/
+node_modules/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Local Environment Variables & Secrets
+.env
+!.env.example
+
+# SQLite Databases & Logs
+*.db
+*.db-wal
+*.db-shm
+*.sqlite3
+*.log
+
+# Frontend Builds
+frontend/dist/
+dist/
+.vite/
+
+# OS Specific
+.DS_Store
+Thumbs.db
