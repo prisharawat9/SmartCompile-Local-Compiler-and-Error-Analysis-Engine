@@ -34,6 +34,13 @@ class Settings(BaseSettings):
     # AI Provider configuration: "mock", "openai", "gemini", "anthropic"
     AI_PROVIDER: str = "mock"
 
+    # Generic AI Model setting (must be explicitly provided if provider=gemini)
+    AI_MODEL: Optional[str] = None
+
+    # Timeouts & Retries
+    AI_TIMEOUT_SECONDS: float = 30.0
+    AI_MAX_RETRIES: int = 2
+
     # OpenAI / Compatible API
     OPENAI_API_KEY: Optional[str] = None
     OPENAI_MODEL: str = "gpt-4o-mini"
@@ -41,14 +48,14 @@ class Settings(BaseSettings):
 
     # Google Gemini API
     GEMINI_API_KEY: Optional[str] = None
-    GEMINI_MODEL: str = "gemini-1.5-flash"
+    GEMINI_MODEL: Optional[str] = None
 
     # Anthropic Claude API
     ANTHROPIC_API_KEY: Optional[str] = None
     ANTHROPIC_MODEL: str = "claude-3-5-haiku-20241022"
 
-    # AI Request Timeout in seconds
-    AI_REQUEST_TIMEOUT: float = 20.0
+    # AI Request Timeout backward-compatibility alias
+    AI_REQUEST_TIMEOUT: float = 30.0
 
     # Token Baseline Assumptions
     BASELINE_PROMPT_OVERHEAD_TOKENS: int = 250
@@ -58,6 +65,17 @@ class Settings(BaseSettings):
     def active_provider(self) -> str:
         """Normalized active AI provider name."""
         return self.AI_PROVIDER.lower().strip()
+
+    def get_model_for_provider(self, provider: Optional[str] = None) -> Optional[str]:
+        """Get model ID for provider. For Gemini, uses AI_MODEL or GEMINI_MODEL without hardcoded fallback."""
+        prov = (provider or self.active_provider).lower()
+        if prov == "gemini":
+            return self.AI_MODEL or self.GEMINI_MODEL
+        elif prov == "openai":
+            return self.AI_MODEL or self.OPENAI_MODEL
+        elif prov == "anthropic":
+            return self.AI_MODEL or self.ANTHROPIC_MODEL
+        return self.AI_MODEL or "mock-smartcompile-v1"
 
     def has_api_key_for_provider(self, provider: Optional[str] = None) -> bool:
         """Check if required API key is present for the requested or active provider."""

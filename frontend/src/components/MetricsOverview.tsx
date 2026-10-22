@@ -105,7 +105,9 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({ stats }) => {
       {/* 5. Tokens Saved vs Full-File Baseline */}
       <div className="glass-panel metric-card" style={{ borderColor: 'rgba(16, 185, 129, 0.35)' }}>
         <div className="metric-header">
-          <span className="metric-title">Token Savings</span>
+          <span className="metric-title">
+            Token Savings (ESTIMATED{mockCalls > 0 && realAiCalls === 0 ? ' - Simulated' : ''})
+          </span>
           <TrendingDown size={18} style={{ color: 'var(--accent-emerald)' }} />
         </div>
         <div className="metric-value metric-highlight">
@@ -113,6 +115,11 @@ export const MetricsOverview: React.FC<MetricsOverviewProps> = ({ stats }) => {
         </div>
         <div className="metric-subtext">
           Saved <strong style={{ color: 'var(--accent-emerald)' }}>{tokensSaved.toLocaleString()}</strong> of {baselineTokens.toLocaleString()} baseline tokens
+          {mockCalls > 0 && (
+            <span style={{ display: 'block', fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>
+              Includes {mockCalls} simulated runs vs baseline
+            </span>
+          )}
         </div>
       </div>
     </div>

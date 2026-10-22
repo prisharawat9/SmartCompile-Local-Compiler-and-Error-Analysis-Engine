@@ -341,12 +341,7 @@ async def health_check():
     has_key = settings.has_api_key_for_provider(active_prov)
 
     # Active model name
-    model = (
-        settings.OPENAI_MODEL if active_prov == "openai"
-        else settings.GEMINI_MODEL if active_prov == "gemini"
-        else settings.ANTHROPIC_MODEL if active_prov == "anthropic"
-        else "mock-smartcompile-v1"
-    )
+    model = settings.get_model_for_provider(active_prov)
 
     # Test SQLite connection
     db_healthy = True

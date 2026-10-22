@@ -208,12 +208,7 @@ async def process_compile_request(req: CompileRequest) -> CompileResponse:
     # Step 4: AI Assistance Required (Construct focused payload with partial code)
     ai_provider = get_ai_provider(provider_name)
     actual_provider_name = ai_provider.name
-    active_model = model_name or (
-        settings.OPENAI_MODEL if actual_provider_name == "openai"
-        else settings.GEMINI_MODEL if actual_provider_name == "gemini"
-        else settings.ANTHROPIC_MODEL if actual_provider_name == "anthropic"
-        else "mock-smartcompile-v1"
-    )
+    active_model = model_name or settings.get_model_for_provider(actual_provider_name) or ""
 
     payload = build_focused_ai_payload(
         source_code=source_code,
