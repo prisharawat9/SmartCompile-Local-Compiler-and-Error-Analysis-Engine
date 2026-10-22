@@ -7,6 +7,8 @@ import { AnalyticsCharts } from './components/AnalyticsCharts';
 import { HistoryTable } from './components/HistoryTable';
 import { TransparencyModal } from './components/TransparencyModal';
 import { SettingsModal } from './components/SettingsModal';
+import { LandingPage } from './components/LandingPage';
+import { SplashCursor } from './components/SplashCursor';
 
 import {
   compileCode,
@@ -53,6 +55,8 @@ export const App: React.FC = () => {
   const [isTransparencyOpen, setIsTransparencyOpen] = useState<boolean>(false);
   const [activeTransparency, setActiveTransparency] = useState<TransparencyDetails | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [loggedIn, setLoggedIn] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
 
   // Initial load
   const loadDashboardData = async () => {
@@ -114,99 +118,97 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="app-container">
-      {/* Top Navigation & Status Bar */}
-      <Header
-        health={health}
-        onOpenSettings={() => setIsSettingsOpen(true)}
-        onClearCache={() => setIsSettingsOpen(true)}
-        onRefresh={loadDashboardData}
-        onOpenTransparency={() => setIsTransparencyOpen(true)}
-        hasTransparency={Boolean(activeTransparency)}
-        isRefreshing={isRefreshing}
-      />
-
-      <main className="main-content">
-        {/* Error Notification Banner */}
-        {errorBanner && (
-          <div
-            style={{
-              padding: '0.85rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              background: 'rgba(244, 63, 94, 0.15)',
-              border: '1px solid var(--accent-rose)',
-              color: '#fda4af',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              fontSize: '0.88rem',
-            }}
-          >
-            <div>
-              <strong>Error:</strong> {errorBanner}
-            </div>
-            <button
-              onClick={() => setErrorBanner(null)}
-              style={{ background: 'none', border: 'none', color: '#fda4af', cursor: 'pointer', fontWeight: 700 }}
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        {/* Section 1: Real Stored Optimization Metrics */}
-        <MetricsOverview stats={stats} />
-
-        {/* Section 2: Code Editor Workspace & Diagnostics Panel */}
-        <div className="workspace-grid">
-          <EditorWorkspace
-            sourceCode={sourceCode}
-            setSourceCode={setSourceCode}
-            onCompile={handleCompile}
-            isLoading={isLoading}
-            forceAi={forceAi}
-            setForceAi={setForceAi}
-            correctedCode={compileResult?.corrected_code ?? null}
-            onApplyFix={handleApplyFix}
+    <>
+      <SplashCursor />
+      {loggedIn ? (
+        <div className="app-container">
+          <Header
+            health={health}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onClearCache={() => setIsSettingsOpen(true)}
+            onRefresh={loadDashboardData}
+            onOpenTransparency={() => setIsTransparencyOpen(true)}
+            hasTransparency={Boolean(activeTransparency)}
+            isRefreshing={isRefreshing}
           />
 
-          <DiagnosticsPanel
-            result={compileResult}
-            isLoading={isLoading}
-            onOpenTransparency={() => setIsTransparencyOpen(true)}
+          <main className="main-content">
+            {errorBanner && (
+              <div
+                style={{
+                  padding: '0.85rem 1.25rem',
+                  borderRadius: 'var(--radius-md)',
+                  background: 'rgba(244, 63, 94, 0.15)',
+                  border: '1px solid var(--accent-rose)',
+                  color: '#fda4af',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  fontSize: '0.88rem',
+                }}
+              >
+                <div>
+                  <strong>Error:</strong> {errorBanner}
+                </div>
+                <button
+                  onClick={() => setErrorBanner(null)}
+                  style={{ background: 'none', border: 'none', color: '#fda4af', cursor: 'pointer', fontWeight: 700 }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            <MetricsOverview stats={stats} />
+
+            <div className="workspace-grid">
+              <EditorWorkspace
+                sourceCode={sourceCode}
+                setSourceCode={setSourceCode}
+                onCompile={handleCompile}
+                isLoading={isLoading}
+                forceAi={forceAi}
+                setForceAi={setForceAi}
+                correctedCode={compileResult?.corrected_code ?? null}
+                onApplyFix={handleApplyFix}
+              />
+              <DiagnosticsPanel
+                result={compileResult}
+                isLoading={isLoading}
+                onOpenTransparency={() => setIsTransparencyOpen(true)}
+              />
+            </div>
+
+            <AnalyticsCharts stats={stats} />
+
+            <HistoryTable
+              items={history}
+              total={historyTotal}
+              onInspectPayload={(t) => {
+                setActiveTransparency(t);
+                setIsTransparencyOpen(true);
+              }}
+              onLoadCode={(code) => setSourceCode(code)}
+            />
+          </main>
+
+          <TransparencyModal
+            isOpen={isTransparencyOpen}
+            onClose={() => setIsTransparencyOpen(false)}
+            transparency={activeTransparency}
+          />
+
+          <SettingsModal
+            isOpen={isSettingsOpen}
+            onClose={() => setIsSettingsOpen(false)}
+            health={health}
+            onClearCache={handleClearCacheAction}
           />
         </div>
-
-        {/* Section 3: Analytics & Visual Efficiency Charts */}
-        <AnalyticsCharts stats={stats} />
-
-        {/* Section 4: Compilation Audit Log */}
-        <HistoryTable
-          items={history}
-          total={historyTotal}
-          onInspectPayload={(t) => {
-            setActiveTransparency(t);
-            setIsTransparencyOpen(true);
-          }}
-          onLoadCode={(code) => setSourceCode(code)}
-        />
-      </main>
-
-      {/* Transparency / Snippet Inspection Modal */}
-      <TransparencyModal
-        isOpen={isTransparencyOpen}
-        onClose={() => setIsTransparencyOpen(false)}
-        transparency={activeTransparency}
-      />
-
-      {/* Settings / Clear Cache Modal */}
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        health={health}
-        onClearCache={handleClearCacheAction}
-      />
-    </div>
+      ) : (
+        <LandingPage onLogin={(user) => { setUsername(user); setLoggedIn(true); }} />
+      )}
+    </>
   );
 };
 
